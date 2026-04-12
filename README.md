@@ -1,4 +1,4 @@
-# RaveOS — ISO Build - 1 -
+# RaveOS — ISO Build
 
 Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizált telepítővel és teljes témarendszerrel.
 

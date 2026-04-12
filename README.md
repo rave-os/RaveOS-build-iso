@@ -1,4 +1,4 @@
-# RaveOS 2.0 Beta — ISO Build - 1 -
+# RaveOS — ISO Build - 1 -
 
 Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizált telepítővel és teljes témarendszerrel.
 

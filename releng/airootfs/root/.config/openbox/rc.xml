@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config>
+  <theme>
+    <name>Clearlooks</name>
+    
+    <font place="ActiveWindow">
+      <name>Noto Sans</name>
+      <size>10</size>
+      <weight>Bold</weight>
+      <slant>Normal</slant>
+    </font>
+
+    <font place="InactiveWindow">
+      <name>Noto Sans</name>
+      <size>10</size>
+      <weight>Normal</weight>
+      <slant>Normal</slant>
+    </font>
+
+    <font place="MenuHeader">
+      <name>Noto Sans</name>
+      <size>10</size>
+      <weight>Bold</weight>
+      <slant>Normal</slant>
+    </font>
+
+    <font place="MenuItem">
+      <name>Noto Sans</name>
+      <size>10</size>
+      <weight>Normal</weight>
+      <slant>Normal</slant>
+    </font>
+
+    <font place="OnScreenDisplay">
+      <name>Noto Sans</name>
+      <size>10</size>
+      <weight>Normal</weight>
+      <slant>Normal</slant>
+    </font>
+  </theme>
+<applications>
+    <application class="*">
+	<decor>no</decor>
+    </application>
+</applications>
+</openbox_config>

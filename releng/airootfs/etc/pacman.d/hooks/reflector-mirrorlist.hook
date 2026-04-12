@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = pacman-mirrorlist
+
+[Action]
+Description = Updating mirrorlist with reflector (Hungary)...
+When = PostTransaction
+Depends = reflector
+Exec = /usr/bin/reflector -c HU --protocol https --sort rate --latest 20 --download-timeout 5 --threads 20 --save /etc/pacman.d/mirrorlist

@@ -1,0 +1,17 @@
+root:x:0:root
+sys:x:3:bin,raveos
+network:x:90:raveos
+power:x:98:raveos
+adm:x:999:raveos
+wheel:x:998:raveos
+uucp:x:987:raveos
+optical:x:990:raveos
+rfkill:x:983:raveos
+video:x:986:raveos
+storage:x:988:raveos
+audio:x:995:raveos
+users:x:985:raveos
+nopasswdlogin:x:966:raveos
+autologin:x:967:raveos
+plugdev:x:46:raveos
+raveos:x:1000:

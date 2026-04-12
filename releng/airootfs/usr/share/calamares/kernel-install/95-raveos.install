@@ -1,0 +1,84 @@
+#!/bin/bash
+# Single-entry, systemd-compliant kernel-install hook for CachyOS
+
+set -e
+
+COMMAND="$1"          # add | remove
+KERNEL_VERSION="$2"   # e.g. 6.18.4-1-cachyos
+
+# Only act on CachyOS kernels
+case "$KERNEL_VERSION" in
+  *cachyos*) ;;
+  *) exit 0 ;;
+esac
+
+BOOT_ROOT="${KERNEL_INSTALL_BOOT_ROOT:-/boot}"
+ENTRY_DIR="$BOOT_ROOT/loader/entries"
+ENTRY_FILE="$ENTRY_DIR/raveos.conf"
+
+# --------------------------------------------------
+# Fixed CachyOS kernel paths (non-versioned)
+# --------------------------------------------------
+LINUX_IMAGE="/vmlinuz-linux-cachyos"
+INITRAMFS_IMAGE="/initramfs-linux-cachyos.img"
+
+# --------------------------------------------------
+# Microcode (must be first initrd)
+# --------------------------------------------------
+MICROCODE=""
+[ -f "$BOOT_ROOT/intel-ucode.img" ] && MICROCODE="/intel-ucode.img"
+[ -f "$BOOT_ROOT/amd-ucode.img" ] && MICROCODE="/amd-ucode.img"
+
+# --------------------------------------------------
+# Root device detection
+# --------------------------------------------------
+ROOT_SRC="$(findmnt -no SOURCE /)"
+ROOT_FS="$(findmnt -no FSTYPE /)"
+ROOT_OPTS="$(findmnt -no OPTIONS /)"
+
+OPTIONS="rw quiet"
+
+# LUKS
+if [[ "$ROOT_SRC" == /dev/mapper/* ]]; then
+  UUID="$(blkid -s UUID -o value "$ROOT_SRC" || true)"
+  if [ -n "$UUID" ]; then
+    OPTIONS="cryptdevice=UUID=$UUID:cryptroot root=/dev/mapper/cryptroot $OPTIONS"
+  else
+    OPTIONS="root=$ROOT_SRC $OPTIONS"
+  fi
+else
+  PARTUUID="$(blkid -s PARTUUID -o value "$ROOT_SRC" || true)"
+  [ -n "$PARTUUID" ] && OPTIONS="root=PARTUUID=$PARTUUID $OPTIONS"
+fi
+
+# --------------------------------------------------
+# Btrfs subvolume support
+# --------------------------------------------------
+if [ "$ROOT_FS" = "btrfs" ]; then
+  SUBVOL="$(echo "$ROOT_OPTS" | tr ',' '\n' | grep '^subvol=' || true)"
+  [ -n "$SUBVOL" ] && OPTIONS="$OPTIONS rootflags=$SUBVOL"
+fi
+
+mkdir -p "$ENTRY_DIR"
+
+case "$COMMAND" in
+  add)
+    {
+      echo "title   RaveOS Linux (CachyOS Kernel)"
+      echo "linux   $LINUX_IMAGE"
+      [ -n "$MICROCODE" ] && echo "initrd  $MICROCODE"
+      echo "initrd  $INITRAMFS_IMAGE"
+      echo "options $OPTIONS"
+    } > "$ENTRY_FILE"
+    ;;
+
+  remove)
+    # Only remove entry if this was the last CachyOS kernel
+    rm -f "$ENTRY_FILE"
+    ;;
+
+  *)
+    exit 0
+    ;;
+esac
+

@@ -1,5 +1,5 @@
 # RaveOS — ISO Build
-#21
+#11
 Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizált telepítővel és teljes témarendszerrel.
 #
 > **Build rendszer:** Forgejo CI → `mkarchiso` → automatikus kiadás

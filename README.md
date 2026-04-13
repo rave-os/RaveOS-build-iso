@@ -1,7 +1,7 @@
 # RaveOS — ISO Build
-
+#
 Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizált telepítővel és teljes témarendszerrel.
-
+#
 > **Build rendszer:** Forgejo CI → `mkarchiso` → automatikus kiadás
 > **Alap:** Arch Linux (rolling) + CachyOS kernel + Chaotic-AUR
 > **Asztali környezet:** GNOME 47+ (Wayland), Hyprland támogatás béta állapotban!

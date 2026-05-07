@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/reflector -c HU --protocol https --sort rate --latest 20 --download-timeout 5 --threads 20 --save /etc/pacman.d/mirrorlist
+ExecStart=/usr/bin/reflector -c HU,AT,DE,PL,CZ --protocol https --sort rate --latest 20 --download-timeout 10 --threads 5 --save /etc/pacman.d/mirrorlist
 
 [Install]
 WantedBy=multi-user.target

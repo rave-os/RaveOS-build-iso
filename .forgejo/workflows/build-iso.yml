@@ -46,8 +46,8 @@ jobs:
             pkg=$(echo "$line" | awk '{print $1}')
             echo "$IGNORE" | grep -qx "$pkg" && continue
             installed=$(echo "$line" | awk '{print $2}')
-            available=$(pacman -Si "$pkg" 2>/dev/null | grep '^Version' | awk '{print $3}')
-            if [ -n "$available" ] && [ "$installed" != "$available" ]; then
+            available=$(pacman -Si "$pkg" 2>/dev/null | grep '^Version' | head -1 | awk '{print $3}')
+            if [ -n "$available" ] && [ "$(vercmp "$installed" "$available")" -lt 0 ]; then
               echo "VERZIO ELTER: $pkg | runner: $installed | repo: $available"
               BROKEN=1
             fi

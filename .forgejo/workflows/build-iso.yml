@@ -151,14 +151,7 @@ jobs:
           RELEASES=$(curl -s "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases?limit=50" \
             -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}")
 
-          cat > /tmp/cleanup_releases.py << 'PYEOF'
-import sys, json
-releases = json.load(sys.stdin)
-releases.sort(key=lambda r: r['id'], reverse=True)
-for r in releases[3:]:
-    print(r['id'], r['tag_name'])
-PYEOF
-          echo "$RELEASES" | python3 /tmp/cleanup_releases.py | while IFS=' ' read -r id tag; do
+          echo "$RELEASES" | python3 -c "import sys,json; releases=json.load(sys.stdin); releases.sort(key=lambda r:r['id'],reverse=True); [print(r['id'],r['tag_name']) for r in releases[3:]]" | while IFS=' ' read -r id tag; do
             curl -s -X DELETE "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/$id" \
               -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}"
             curl -s -X DELETE "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/tags/$tag" \

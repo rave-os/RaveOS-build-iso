@@ -16,14 +16,17 @@
 # Uncomment+move the mirrors to your desire. By default, geo-mirror, cdn-mirror and a few country mirrors are enabled,
 # to allow for a reasonable number of fallbacks while keeping the defaults short. Have fun!
 
-## Geo mirror (virtual)
-# Automatic routing to the geographically closest mirror (default)
-Server = https://geo-mirror.chaotic.cx/$repo/$arch
+## Germany (DE) - prioritized for HU/AT/DE/PL region
+Server = https://de-mirror.chaotic.cx/$repo/$arch
 
 ## CDN mirror (regular)
 # Global
 # * By: Garuda Linux donators, hosted on Cloudflare R2
 Server = https://cdn-mirror.chaotic.cx/$repo/$arch
+
+## Geo mirror (virtual)
+# Automatic routing to the geographically closest mirror (default)
+Server = https://geo-mirror.chaotic.cx/$repo/$arch
 
 
 ## --- Country mirrors ---

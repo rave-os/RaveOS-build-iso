@@ -53,7 +53,7 @@ Server = https://br-mirror.chaotic.cx/$repo/$arch
 #Server = https://fr-mirror.chaotic.cx/$repo/$arch
 
 # Germany (DE)
-Server = https://de-mirror.chaotic.cx/$repo/$arch
+#Server = https://de-mirror.chaotic.cx/$repo/$arch
 
 # Greece (GR)
 #Server = https://gr-mirror.chaotic.cx/$repo/$arch

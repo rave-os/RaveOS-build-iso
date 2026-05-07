@@ -54,10 +54,12 @@ jobs:
           done < <(pacman -Q)
 
           if [ "$BROKEN" -eq 1 ]; then
-            echo "HIBA: A runner csomagjai elternek a repotol. Frissitsd: sudo pacman -Syu"
-            exit 1
+            echo "Elavult csomagok talalhatok, auto-frissites indul..."
+            sudo pacman -Syu --noconfirm
+            echo "Runner auto-frissites: OK"
+          else
+            echo "Runner konzisztencia ellenorzes: OK"
           fi
-          echo "Runner konzisztencia ellenorzes: OK"
 
       - name: Setup Chaotic-AUR
         run: |

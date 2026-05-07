@@ -148,6 +148,23 @@ jobs:
 
           echo "Release feltoltve: https://git.rp1.hu/RaveOS/RaveOS-Releases/releases/tag/${TAG}"
 
+          RELEASES=$(curl -s "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases?limit=50" \
+            -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}")
+
+          echo "$RELEASES" | python3 -c "
+import sys, json
+releases = json.load(sys.stdin)
+releases.sort(key=lambda r: r['id'], reverse=True)
+for r in releases[3:]:
+    print(r['id'], r['tag_name'])
+" | while read id tag; do
+            curl -s -X DELETE "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/$id" \
+              -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}"
+            curl -s -X DELETE "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/tags/$tag" \
+              -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}"
+            echo "Regi release torolve: $tag"
+          done
+
       - name: Cleanup (SAFE)
         if: always()
         run: |

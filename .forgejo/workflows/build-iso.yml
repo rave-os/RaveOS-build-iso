@@ -82,6 +82,7 @@ jobs:
 
       - name: Check ISO for broken library links
         run: |
+          sudo modprobe loop || true
           ISO_FILE=$(ls output/*.iso | head -1)
           MOUNT_DIR=$(mktemp -d)
           sudo mount -o loop,ro "$ISO_FILE" "$MOUNT_DIR"

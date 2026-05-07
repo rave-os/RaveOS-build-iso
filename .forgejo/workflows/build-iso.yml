@@ -140,9 +140,11 @@ jobs:
           RELEASE_ID=$(echo "$RELEASE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
           echo "Release ID: $RELEASE_ID"
 
-          curl -s -X POST "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/${RELEASE_ID}/assets" \
+          echo "ISO feltoltes indul: $ISO_NAME ($ISO_SIZE)"
+          UPLOAD=$(curl -f --progress-bar -X POST "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/${RELEASE_ID}/assets" \
             -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" \
-            -F "attachment=@${ISO_FILE}"
+            -F "attachment=@${ISO_FILE}")
+          echo "Upload valasz: $UPLOAD"
 
           echo "Release feltoltve: https://git.rp1.hu/RaveOS/RaveOS-Releases/releases/tag/${TAG}"
 

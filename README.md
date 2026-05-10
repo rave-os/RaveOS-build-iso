@@ -10,6 +10,31 @@ Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizá
 
 ## Változásnapló
 
+### Build 2026-05-10
+
+#### `[iso]` chaotic-rankmirrors — automatikus mirror rangsoroló
+- Boot után automatikusan teszteli az összes Chaotic-AUR mirrort válaszidő (TTFB) alapján
+- A top 5 leggyorsabb mirrort írja be a `/etc/pacman.d/chaotic-mirrorlist`-be
+- `After=network-online.target` — mire a Calamares indul, már a legjobb mirror aktív
+- Tesztelt mirrorok: de, cdn, geo, pl, nl, ch, se, fr, gb és régióspecifikus variánsaik
+
+#### `[iso]` Mirror optimalizálás
+- Hivatalos Arch mirrorlist frissítve: HU/AT/DE/PL/CZ régió, HTTPS, rate szerint rendezve
+- Chaotic-AUR: DE mirror prioritizálva közép-európai felhasználóknak
+
+#### `[tools]` raveos-tools 1.0.0-5
+- `update-flatpak` parancs eltávolítva a `rave` bash completionből
+
+#### `[ci]` Build workflow javítások
+- Runner verzió eltérésnél automatikus `pacman -Syu` fut le, nem épít hibát
+- ISO mount loop eszköz hiba kezelés javítva — ha a loop eszköz nem elérhető, figyelmeztetés helyett folytatódik a build
+- ISO feltöltés: részletesebb logolás, `-f` flag hozzáadva
+- Régi release-ek automatikus törlése: mindig csak az utolsó 3 marad
+
+#### `[ci]` raveos-core-repo repoadd workflow javítás
+- `actions/checkout@v4` lecserélve manuális SSH klónra — az HTTPS-en keresztüli nagy bináris repo (1.8GB) SSL EOF hibát okozott Nginx mögött
+- SSH klón megkerüli az SSL terminálást, stabil nagy repo esetén is
+
 ### Build 2026-04-08
 
 #### Főbb változások

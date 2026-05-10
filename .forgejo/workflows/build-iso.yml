@@ -19,11 +19,13 @@ jobs:
 
       - name: Prepare temp directories (NO /tmp usage)
         run: |
+          set -euo pipefail
           mkdir -p "${GITHUB_WORKSPACE}/.tmp"
           df -h
 
       - name: Fix raveos-core-repo pacman repo (overwrite clean)
         run: |
+          set -euo pipefail
           sudo sed -i '/^\[raveos-core-repo\]/,/^$/d' /etc/pacman.conf
           cat <<'EOF' | sudo tee -a /etc/pacman.conf
           [raveos-core-repo]
@@ -31,38 +33,24 @@ jobs:
           Server = https://page.rp1.hu/x86_64/
           EOF
 
-      - name: Update pacman databases
-        run: sudo pacman -Sy --noconfirm
-
-      - name: Verify archiso
-        run: mkarchiso --version
-
-      - name: Pre-build runner consistency check
+      - name: Sync and update runner
         run: |
-          IGNORE=$(grep '^IgnorePkg' /etc/pacman.conf | sed 's/IgnorePkg\s*=\s*//' | tr ' ' '\n' | tr ',' '\n')
-          BROKEN=0
-
-          while IFS= read -r line; do
-            pkg=$(echo "$line" | awk '{print $1}')
-            echo "$IGNORE" | grep -qx "$pkg" && continue
-            installed=$(echo "$line" | awk '{print $2}')
-            available=$(pacman -Si "$pkg" 2>/dev/null | grep '^Version' | head -1 | awk '{print $3}')
-            if [ -n "$available" ] && [ "$(vercmp "$installed" "$available")" -lt 0 ]; then
-              echo "VERZIO ELTER: $pkg | runner: $installed | repo: $available"
-              BROKEN=1
-            fi
-          done < <(pacman -Q)
-
-          if [ "$BROKEN" -eq 1 ]; then
+          set -euo pipefail
+          sudo pacman -Sy --noconfirm
+          if pacman -Qu 2>/dev/null | grep -q .; then
             echo "Elavult csomagok talalhatok, auto-frissites indul..."
-            sudo pacman -Syu --noconfirm
+            sudo pacman -Su --noconfirm
             echo "Runner auto-frissites: OK"
           else
             echo "Runner konzisztencia ellenorzes: OK"
           fi
 
+      - name: Verify archiso
+        run: mkarchiso --version
+
       - name: Setup Chaotic-AUR
         run: |
+          set -euo pipefail
           if [ ! -f /etc/pacman.d/chaotic-mirrorlist ]; then
             sudo mkdir -p /etc/pacman.d
             echo 'Server = https://cdn-mirror.chaotic.cx/$repo/$arch' | sudo tee /etc/pacman.d/chaotic-mirrorlist
@@ -75,15 +63,18 @@ jobs:
 
       - name: Build ISO
         run: |
+          set -euo pipefail
           chmod +x ./build.sh
           sudo ./build.sh
 
       - name: Check build output
         run: |
+          set -euo pipefail
           ls -lh output/*.iso
 
       - name: Check ISO for broken library links
         run: |
+          set -euo pipefail
           sudo modprobe loop || true
           ISO_FILE=$(ls output/*.iso | head -1)
           MOUNT_DIR=$(mktemp -d)
@@ -115,7 +106,7 @@ jobs:
 
       - name: Create Forgejo Release and upload ISO
         run: |
-          set -e
+          set -euo pipefail
 
           ISO_FILE=$(ls output/*.iso | head -1)
           ISO_NAME=$(basename "$ISO_FILE")
@@ -134,29 +125,33 @@ jobs:
           Verification:
           echo \"${ISO_SHA256}  ${ISO_NAME}\" | sha256sum -c"
 
-          RELEASE=$(curl -s -X POST "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases" \
+          RELEASE=$(curl -f -s --retry 3 --retry-delay 5 \
+            -X POST "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases" \
             -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "{\"tag_name\":\"${TAG}\",\"name\":\"RaveOS ${TAG}\",\"body\":$(echo "$RELEASE_BODY" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))'),\"draft\":false,\"prerelease\":false}")
 
           RELEASE_ID=$(echo "$RELEASE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+          [[ "$RELEASE_ID" =~ ^[0-9]+$ ]] || { echo "HIBA: Ervenytelen RELEASE_ID: $RELEASE_ID"; exit 1; }
           echo "Release ID: $RELEASE_ID"
 
           echo "ISO feltoltes indul: $ISO_NAME ($ISO_SIZE)"
-          UPLOAD=$(curl -f --progress-bar -X POST "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/${RELEASE_ID}/assets" \
+          curl -f --retry 3 --retry-delay 10 --progress-bar \
+            -X POST "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/${RELEASE_ID}/assets" \
             -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" \
-            -F "attachment=@${ISO_FILE}")
-          echo "Upload valasz: $UPLOAD"
+            -F "attachment=@${ISO_FILE}"
+          echo "ISO feltoltes: OK"
 
           echo "Release feltoltve: https://git.rp1.hu/RaveOS/RaveOS-Releases/releases/tag/${TAG}"
 
-          RELEASES=$(curl -s "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases?limit=50" \
+          RELEASES=$(curl -f -s --retry 3 --retry-delay 5 \
+            "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases?limit=50" \
             -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}")
 
           echo "$RELEASES" | python3 -c "import sys,json; releases=json.load(sys.stdin); releases.sort(key=lambda r:r['id'],reverse=True); [print(r['id'],r['tag_name']) for r in releases[3:]]" | while IFS=' ' read -r id tag; do
-            curl -s -X DELETE "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/$id" \
+            curl -f -s --retry 3 -X DELETE "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/$id" \
               -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}"
-            curl -s -X DELETE "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/tags/$tag" \
+            curl -f -s --retry 3 -X DELETE "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/tags/$tag" \
               -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}"
             echo "Regi release torolve: $tag"
           done

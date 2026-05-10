@@ -1,0 +1,11 @@
+[Unit]
+Description=Rank Chaotic-AUR mirrors by speed
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/chaotic-rankmirrors
+
+[Install]
+WantedBy=multi-user.target

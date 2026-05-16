@@ -12,6 +12,9 @@ jobs:
     env:
       TMPDIR: ${{ github.workspace }}/.tmp
       GIT_TMPDIR: ${{ github.workspace }}/.tmp
+      VPS_HOST: 185.170.114.175
+      VPS_USER: root
+      VPS_RELEASES_PATH: /root/docker/releases/www
 
     steps:
       - name: Checkout build repository
@@ -104,7 +107,26 @@ jobs:
           fi
           echo "ISO library ellenorzes: OK"
 
-      - name: Create Forgejo Release and upload ISO
+      - name: Upload ISO to release server
+        run: |
+          set -euo pipefail
+          ISO_FILE=$(ls output/*.iso | head -1)
+          ISO_NAME=$(basename "$ISO_FILE")
+
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_RELEASE_KEY }}" > ~/.ssh/vps_release_key
+          chmod 600 ~/.ssh/vps_release_key
+
+          # Régi ISO-k törlése, új feltöltése
+          ssh -i ~/.ssh/vps_release_key -o StrictHostKeyChecking=no \
+            ${VPS_USER}@${VPS_HOST} "rm -f ${VPS_RELEASES_PATH}/*.iso"
+          scp -i ~/.ssh/vps_release_key -o StrictHostKeyChecking=no \
+            "$ISO_FILE" "${VPS_USER}@${VPS_HOST}:${VPS_RELEASES_PATH}/${ISO_NAME}"
+
+          echo "ISO feltoltve: https://release.rp1.hu/${ISO_NAME}"
+          echo "ISO_NAME=${ISO_NAME}" >> "$GITHUB_ENV"
+
+      - name: Create Forgejo Release with external link
         run: |
           set -euo pipefail
 
@@ -135,15 +157,16 @@ jobs:
           [[ "$RELEASE_ID" =~ ^[0-9]+$ ]] || { echo "HIBA: Ervenytelen RELEASE_ID: $RELEASE_ID"; exit 1; }
           echo "Release ID: $RELEASE_ID"
 
-          echo "ISO feltoltes indul: $ISO_NAME ($ISO_SIZE)"
-          curl -f --retry 3 --retry-delay 10 --progress-bar \
-            -X POST "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/${RELEASE_ID}/assets" \
+          # External link hozzáadása attachment helyett
+          curl -f -s --retry 3 \
+            -X POST "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases/${RELEASE_ID}/assets?external_url=https://release.rp1.hu/${ISO_NAME}" \
             -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" \
-            -F "attachment=@${ISO_FILE}"
-          echo "ISO feltoltes: OK"
+            -F "name=${ISO_NAME}"
+          echo "External link hozzaadva: https://release.rp1.hu/${ISO_NAME}"
 
-          echo "Release feltoltve: https://git.rp1.hu/RaveOS/RaveOS-Releases/releases/tag/${TAG}"
+          echo "Release kesz: https://git.rp1.hu/RaveOS/RaveOS-Releases/releases/tag/${TAG}"
 
+          # Regi release-ek torlese (3-nal tobbet nem tartunk)
           RELEASES=$(curl -f -s --retry 3 --retry-delay 5 \
             "https://git.rp1.hu/api/v1/repos/RaveOS/RaveOS-Releases/releases?limit=50" \
             -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}")
@@ -159,6 +182,7 @@ jobs:
       - name: Cleanup (SAFE)
         if: always()
         run: |
+          rm -f ~/.ssh/vps_release_key
           sudo umount -R "${GITHUB_WORKSPACE}/work" 2>/dev/null || true
           sudo umount -R "${GITHUB_WORKSPACE}/output" 2>/dev/null || true
           sudo rm -rf "${GITHUB_WORKSPACE}/work"

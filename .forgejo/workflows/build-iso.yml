@@ -117,11 +117,13 @@ jobs:
           echo "${{ secrets.VPS_RELEASE_KEY }}" > ~/.ssh/vps_release_key
           chmod 600 ~/.ssh/vps_release_key
 
-          # Régi ISO-k törlése, új feltöltése
-          ssh -i ~/.ssh/vps_release_key -o StrictHostKeyChecking=no \
-            ${VPS_USER}@${VPS_HOST} "rm -f ${VPS_RELEASES_PATH}/*.iso"
+          # Új ISO feltöltése
           scp -i ~/.ssh/vps_release_key -o StrictHostKeyChecking=no \
             "$ISO_FILE" "${VPS_USER}@${VPS_HOST}:${VPS_RELEASES_PATH}/${ISO_NAME}"
+
+          # 3-nál régebbi ISO-k törlése a VPS-ről
+          ssh -i ~/.ssh/vps_release_key -o StrictHostKeyChecking=no \
+            ${VPS_USER}@${VPS_HOST} "ls -t ${VPS_RELEASES_PATH}/*.iso 2>/dev/null | tail -n +4 | xargs -r rm -f"
 
           echo "ISO feltoltve: https://release.rp1.hu/${ISO_NAME}"
           echo "ISO_NAME=${ISO_NAME}" >> "$GITHUB_ENV"

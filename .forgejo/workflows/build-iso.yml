@@ -12,9 +12,6 @@ jobs:
     env:
       TMPDIR: ${{ github.workspace }}/.tmp
       GIT_TMPDIR: ${{ github.workspace }}/.tmp
-      VPS_HOST: 185.170.114.175
-      VPS_USER: root
-      VPS_RELEASES_PATH: /root/docker/releases/www
 
     steps:
       - name: Checkout build repository
@@ -118,12 +115,12 @@ jobs:
           chmod 600 ~/.ssh/vps_release_key
 
           # Új ISO feltöltése
-          scp -i ~/.ssh/vps_release_key -o StrictHostKeyChecking=no \
-            "$ISO_FILE" "${VPS_USER}@${VPS_HOST}:${VPS_RELEASES_PATH}/${ISO_NAME}"
+          scp -i ~/.ssh/vps_release_key -P ${{ secrets.VPS_PORT }} -o StrictHostKeyChecking=no \
+            "$ISO_FILE" "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_RELEASES_PATH }}/${ISO_NAME}"
 
           # 3-nál régebbi ISO-k törlése a VPS-ről
-          ssh -i ~/.ssh/vps_release_key -o StrictHostKeyChecking=no \
-            ${VPS_USER}@${VPS_HOST} "ls -t ${VPS_RELEASES_PATH}/*.iso 2>/dev/null | tail -n +4 | xargs -r rm -f"
+          ssh -i ~/.ssh/vps_release_key -p ${{ secrets.VPS_PORT }} -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "ls -t ${{ secrets.VPS_RELEASES_PATH }}/*.iso 2>/dev/null | tail -n +4 | xargs -r rm -f"
 
           echo "ISO feltoltve: https://release.rp1.hu/${ISO_NAME}"
           echo "ISO_NAME=${ISO_NAME}" >> "$GITHUB_ENV"

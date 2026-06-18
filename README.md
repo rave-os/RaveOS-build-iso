@@ -1,4 +1,4 @@
-# RaveOS — ISO Build..  
+# RaveOS — ISO Build...  
 
 Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizált telepítővel és teljes témarendszerrel.
 #
@@ -9,6 +9,10 @@ Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizá
 ----
 
 ## Változásnapló
+
+## Build 2026-06-18
+
+#### '[iso]' pipewire csomagok manual hozzaadva, calamares theme frissitve
 
 ### Build 2026-05-10
 

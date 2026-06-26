@@ -141,10 +141,6 @@ bash-completion
 calamares
 raveos-calamares-theme
 raveos-calamares-module
-raveos-gnome-theme
-raveos-cosmic-theme
-raveos-kde-theme
-raveos-hyprland-theme
 
 qt6-base
 qt6-svg

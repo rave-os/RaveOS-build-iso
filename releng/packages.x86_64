@@ -102,9 +102,7 @@ networkmanager
 chaotic-keyring
 chaotic-mirrorlist
 archlinux-keyring
-
-# Yay
-yay-bin
+raveos-keyring
 
 # Terminal greeting
 fastfetch

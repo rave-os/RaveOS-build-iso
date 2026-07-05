@@ -61,6 +61,77 @@ jobs:
               https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst || true
           fi
 
+      - name: Setup RaveOS signing key
+        run: |
+          set -euo pipefail
+          cat <<'RAVEOSKEY' | sudo pacman-key --add -
+          -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+          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
+          ibVZLr5g97pSMBQUv/dO6I+jfPtqITpDupTdDgg=
+          =WGkj
+          -----END PGP PUBLIC KEY BLOCK-----
+          RAVEOSKEY
+          sudo pacman-key --lsign-key 25C7668F1235F5664F037671BDB2A9CE6EBFF113
+
       - name: Build ISO
         run: |
           set -euo pipefail

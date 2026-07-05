@@ -106,12 +106,3 @@ raveos-keyring
 
 # Terminal greeting
 fastfetch
-
-# Ad blocker (rave upgrade)
-hblock
-
-# Bluetooth
-bluez
-bluez-libs
-bluez-tools
-bluez-utils

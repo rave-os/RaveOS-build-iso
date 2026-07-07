@@ -12,7 +12,7 @@ Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizá
 
 ## Build 2026-06-18
 
-#### '[iso]' pipewire csomagok manual hozzaadva, calamares theme frissitve
+#### `[iso]` pipewire csomagok manual hozzaadva, calamares theme frissitve
 
 ### Build 2026-05-10
 

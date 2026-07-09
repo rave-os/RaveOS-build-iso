@@ -46,7 +46,7 @@ jobs:
           fi
 
       - name: Verify archiso
-        run: mkarchiso --version
+        run: pacman -Q archiso
 
       - name: Setup Chaotic-AUR
         run: |

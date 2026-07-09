@@ -10,6 +10,29 @@ Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizá
 
 ## Változásnapló
 
+## Build 2026-07-06
+
+#### `[security]` GPG csomag-aláírás bevezetve
+- `[raveos-core-repo]` `SigLevel` átállítva `Never TrustAll`-ról `Required DatabaseOptional`-ra — minden csomag aláírás-ellenőrzés kötelező, az adatbázis-aláírás opcionális
+- `raveos-keyring` csomag hozzáadva a `packages.x86_64`-hez és a `shellprocess-pacstrap.conf` kezdeti pacstrap listájához — ez biztosítja hogy a célrendszer bizalma a kulcsban már a nagy csomag-batch előtt beálljon
+
+#### `[iso]` `packages.x86_64` nagytakarítás
+- ~70 elavult rescue/live-környezet/VM-guest csomag eltávolítva — RaveOS mára tisztán telepítő-orientált, nincs külön live/rescue pozicionálás
+- `yay-bin` eltávolítva (a `packages.x86_64`-ből és a `shellprocess-pacstrap.conf`-ból is) — pacman repo-elsőbbség miatt ha nálunk van pinnelve, sosem frissül a Chaotic-AUR-ról; most szabadon a Chaotic-AUR-ról jön
+- `bluez`/`bluez-libs`/`bluez-tools`/`bluez-utils` és `hblock` átkerült a `packages.x86_64`-ből (élő ISO) a `desktopselect.conf` mandatory_packages-ébe (végleges rendszer) — az élő médiumon nem kellenek, de a telepített rendszeren igen
+- `cow_spacesize=75%` — a korábbi hiányzó érték miatt az archiso alapértelmezett 256M-re esett vissza (az eredeti szándék 4G volt)
+
+#### `[calamares]` Telepítési hibajavítások (valódi telepítési tesztekkel feltárva)
+- `lsb-release` visszaállítva a csomaglistába — hiánya a `shellprocess-branding.conf`-ot törte
+- `raveos-kde-theme` → helyes név `raveos-plasma-theme` (két helyen: `desktopselect.conf` és `shellprocess-final.conf` auto-apply ellenőrzés)
+- `plasma-bigscreen` eltávolítás `-Rns`-ről `-Rcns`-re javítva (a `-Rns` némán elhasalt függőség-ütközésen)
+- `raveos-sddm-theme`: `qt6-multimedia` függőség hozzáadva (SDDM alapértelmezett megjelenésre esett vissza nélküle)
+- `raveos-welcome` és `raveos-app-installer` felvéve a `desktopselect.conf` mandatory_packages közé.
+- `sddm-astronaut-theme` maradék hivatkozás eltávolítva a `desktopselect.conf`-ból (csomag-ütközést okozott a törlése után)
+
+#### `[core-repo]` Nem használt AUR-bináris csomagok eltávolítva
+- `hyprshell`, `zenpower5-dkms-git` törölve a `raveos-core-repo`-ból
+
 ## Build 2026-06-18
 
 #### `[iso]` pipewire csomagok manual hozzaadva, calamares theme frissitve

@@ -1,5 +1,4 @@
 alsa-utils
-amd-ucode
 arch-install-scripts
 base
 brltty
@@ -18,10 +17,8 @@ exfatprogs
 foot-terminfo
 gptfdisk
 grub
-intel-ucode
 iw
 iwd
-kitty-terminfo
 less
 libusb-compat
 linux
@@ -94,8 +91,6 @@ xorg-server
 xorg-xinit
 xorg-xset
 xterm
-sudo
-nano
 networkmanager
 
 # Chaotic-AUR

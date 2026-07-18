@@ -1,0 +1,127 @@
+// RaveOS Plymouth boot splash script (live install medium)
+
+Window.SetBackgroundTopColor(0.102, 0.106, 0.114);
+Window.SetBackgroundBottomColor(0.075, 0.078, 0.086);
+
+screen_width = Window.GetWidth();
+screen_height = Window.GetHeight();
+
+// --- logo: owl icon, centered ---
+
+owl_image = Image("raveos-owl.png");
+owl_width = owl_image.GetWidth();
+owl_height = owl_image.GetHeight();
+
+logo_scale = 0.36;
+owl_width = owl_width * logo_scale;
+owl_height = owl_height * logo_scale;
+owl_image = owl_image.Scale(owl_width, owl_height);
+
+owl_sprite = Sprite(owl_image);
+
+owl_x = screen_width / 2 - owl_width / 2;
+owl_y = screen_height / 2 - owl_height / 2 - 20;
+owl_sprite.SetPosition(owl_x, owl_y, 10);
+
+// --- status text: pre-rendered PNG cycling by boot progress ---
+
+status_count = 6;
+status_images[0] = Image("status-01.png");
+status_images[1] = Image("status-02.png");
+status_images[2] = Image("status-03.png");
+status_images[3] = Image("status-04.png");
+status_images[4] = Image("status-05.png");
+status_images[5] = Image("status-06.png");
+
+status_sprite = Sprite();
+status_sprite.SetZ(10);
+status_scale = 0.5;
+status_y = owl_y + owl_height + 40;
+
+seconds_per_stage = 1.2;
+
+// --- progress dots ---
+
+dot_lit_image = Image("dot-lit.png");
+dot_dim_image = Image("dot-dim.png");
+dot_scale = 0.35;
+dot_size = dot_lit_image.GetWidth() * dot_scale;
+dot_gap = 10;
+dots_width = status_count * dot_size + (status_count - 1) * dot_gap;
+dots_y = status_y + 34;
+
+for (i = 0; i < status_count; i++)
+{
+  dot_sprites[i] = Sprite();
+  dot_sprites[i].SetZ(10);
+  dot_sprites[i].SetX(screen_width / 2 - dots_width / 2 + i * (dot_size + dot_gap));
+  dot_sprites[i].SetY(dots_y);
+}
+
+fun update_dots(index)
+{
+  for (i = 0; i < status_count; i++)
+  {
+    if (i <= index)
+      img = dot_lit_image.Scale(dot_size, dot_size);
+    else
+      img = dot_dim_image.Scale(dot_size, dot_size);
+    dot_sprites[i].SetImage(img);
+  }
+}
+
+fun update_status(index)
+{
+  if (index >= status_count)
+    index = status_count - 1;
+
+  img = status_images[index].Scale(status_images[index].GetWidth() * status_scale,
+                                    status_images[index].GetHeight() * status_scale);
+  status_sprite.SetImage(img);
+  status_sprite.SetX(screen_width / 2 - img.GetWidth() / 2);
+  status_sprite.SetY(status_y);
+
+  update_dots(index);
+}
+
+update_status(0);
+
+# "duration" a valos eltelt masodperc a boot ota - ez mindig pontos,
+# ellentetben a "progress" becslessel (ami elozo boot-idomeresre tamaszkodik,
+# es elso/friss elo boot-nal megbizhatatlan / gyakorlatilag 0-n ragad).
+Plymouth.SetBootProgressFunction(fun(duration, progress)
+{
+  index = Math.Int(duration / seconds_per_stage);
+  update_status(index);
+});
+
+// --- password prompt (LUKS unlock) ---
+
+fun display_password_callback(prompt, bullets)
+{
+  local.text = prompt;
+  if (local.text == "")
+    local.text = "Enter passphrase to unlock disk";
+
+  prompt_image = Image.Text(local.text, 0.9, 0.9, 0.9, 1, "Ubuntu Mono 11");
+  bullets_image = Image.Text(bullets, 0.36, 0.66, 0.32, 1, "Ubuntu Mono 11");
+
+  prompt_sprite = Sprite(prompt_image);
+  bullets_sprite = Sprite(bullets_image);
+
+  prompt_sprite.SetPosition(screen_width / 2 - prompt_image.GetWidth() / 2,
+                             screen_height / 2 + 80, 20);
+  bullets_sprite.SetPosition(screen_width / 2 - bullets_image.GetWidth() / 2,
+                              screen_height / 2 + 110, 20);
+}
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+
+fun display_normal_callback()
+{
+}
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+
+fun quit_callback()
+{
+}
+Plymouth.SetQuitFunction(quit_callback);

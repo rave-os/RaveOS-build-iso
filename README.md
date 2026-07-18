@@ -10,6 +10,22 @@ Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizá
 
 ## Változásnapló
 
+## Build 2026-07-18
+
+#### `[boot]` Plymouth boot splash bevezetve
+- Egyedi RaveOS téma (bagoly logó, zöld pöttyök, időalapú fázis-szövegváltás) élő ISO-n és telepített rendszeren is
+- `HOOKS+=plymouth` mind az élő ISO, mind a célrendszer `mkinitcpio.conf`-jában
+
+#### `[calamares]` Hiányzó `root=` javítva a boot-bejegyzésben
+- `95-raveos.install` (kernel-install hook) `findmnt`-alapú root-detektálása üresen térhetett vissza a pacstrap chroot kontextusban → `root=` nélküli, nem bootolható bejegyzés jött létre
+- Tartalék detektálás hozzáadva: `/proc/mounts`, majd `/etc/fstab`
+- Záró biztonsági háló a telepítés végén (`calamares-fix-bootentry.sh`): ha valamelyik bejegyzésből mégis hiányozna a `root=`, az `/etc/fstab`-ból pótolja
+
+#### `[calamares]` Btrfs subvolume-elrendezés bevezetve
+- Eddig `erase` módban egyetlen lapos `@` subvolume jött létre — nincs elkülönítve semmi
+- Mostantól archinstall-stílusú elrendezés (`partition.conf`): `@` → `/`, `@home` → `/home`, `@log` → `/var/log`, `@pkg` → `/var/cache/pacman/pkg`, `@snapshots` → `/.snapshots`
+- Előfeltétele a snapshot-alapú eszközöknek (`grub-btrfs`, Snapper)
+
 ## Build 2026-07-06
 
 #### `[security]` GPG csomag-aláírás bevezetve

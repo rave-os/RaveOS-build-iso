@@ -101,3 +101,6 @@ raveos-keyring
 
 # Terminal greeting
 fastfetch
+
+# Boot splash
+plymouth

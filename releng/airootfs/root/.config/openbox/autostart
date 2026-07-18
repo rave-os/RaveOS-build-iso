@@ -4,5 +4,8 @@ xset s off
 xset -dpms
 xset s noblank
 
+# X mar atvette a kepernyot, a Plymouth-quit itt mar zokkenomentes
+plymouth quit &
+
 # Launch Calamares fullscreen
 calamares &

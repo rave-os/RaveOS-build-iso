@@ -32,11 +32,36 @@ MICROCODE=""
 # --------------------------------------------------
 # Root device detection
 # --------------------------------------------------
-ROOT_SRC="$(findmnt -no SOURCE /)"
-ROOT_FS="$(findmnt -no FSTYPE /)"
-ROOT_OPTS="$(findmnt -no OPTIONS /)"
+# findmnt can come back empty depending on the chroot/mount-namespace
+# context this hook runs in (e.g. during pacstrap). Fall back to
+# /proc/mounts, and finally /etc/fstab (once it exists), before giving up.
+ROOT_SRC="$(findmnt -no SOURCE / || true)"
+ROOT_FS="$(findmnt -no FSTYPE / || true)"
+ROOT_OPTS="$(findmnt -no OPTIONS / || true)"
 
-OPTIONS="rw quiet"
+if [ -z "$ROOT_SRC" ]; then
+  ROOT_SRC="$(awk '$2 == "/" {print $1; exit}' /proc/mounts)"
+  ROOT_FS="$(awk '$2 == "/" {print $3; exit}' /proc/mounts)"
+  ROOT_OPTS="$(awk '$2 == "/" {print $4; exit}' /proc/mounts)"
+fi
+
+if [ -z "$ROOT_SRC" ] && [ -f /etc/fstab ]; then
+  ROOT_SRC="$(awk '$2 == "/" {print $1; exit}' /etc/fstab)"
+  ROOT_FS="$(awk '$2 == "/" {print $3; exit}' /etc/fstab)"
+  ROOT_OPTS="$(awk '$2 == "/" {print $4; exit}' /etc/fstab)"
+fi
+
+# /proc/mounts and /etc/fstab may give "UUID=xxxx"/"PARTUUID=xxxx" directly
+# instead of a /dev/ path -- resolve to an actual device node so the blkid
+# lookups below work either way.
+case "$ROOT_SRC" in
+  UUID=*|PARTUUID=*|LABEL=*)
+    RESOLVED="$(blkid -t "$ROOT_SRC" -o device 2>/dev/null || true)"
+    [ -n "$RESOLVED" ] && ROOT_SRC="$RESOLVED"
+    ;;
+esac
+
+OPTIONS="rw quiet splash"
 
 # LUKS
 if [[ "$ROOT_SRC" == /dev/mapper/* ]]; then

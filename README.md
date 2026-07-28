@@ -10,6 +10,55 @@ Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizá
 
 ## Változásnapló
 
+## Build 2026-07-28
+
+#### `[theme]` Hyprland téma: `hyprshell` → `raveswitch` csere + tisztítás
+- `raveos-hyprland-theme` `depends`: `hyprshell` → `raveswitch` (Alt+Tab ablakváltó
+  utódja), `hyprpolkitagent` → `polkit-gnome` (jobb megjelenés)
+- `hyprland.lua` és `keybinds.lua` frissítve az új raveswitch/polkit-gnome
+  exec-parancsokra; a felesleges `theme-data/dms/` (teljes duplikált DMS forrásfa),
+  `theme-data/hyprshell/`, `theme-data/hypr/dms/`, `theme-data/hypr/scripts/`
+  könyvtárak törölve a payloadból
+- `hyprshot` képernyőkép-kezelő bekötve (aktív ablak / kijelölés / teljes képernyő,
+  3 keybind), `Kvantum` (Edna téma) hozzáadva a theme-data-hoz és az apply scripthez
+
+#### `[calamares]` GNOME Wayland billentyűzet-kiosztás javítás
+- `raveos-calamares-theme/etc/calamares/modules/keyboard.conf` létrehozva
+  (`configure: { gnome: true, useLocale1: true }`) — eddig a Calamares gyári
+  `gnome: false` alapértéke miatt a telepítéskor választott billentyűzetkiosztás
+  nem érvényesült a GNOME Wayland session-ben
+
+#### `[app]` App Installer: Kdenlive flatpak-ra, Steam proton-cachyos-slr javítás
+- `kdenlive`: pacman → `flatpak-user` (`org.kde.kdenlive`)
+- Steam telepítő script: `proton-cachyos` → `proton-cachyos-slr` — a `proton-cachyos`
+  önmagában nem is létezik csomagként a chaotic-aur-ban, csak `-native`/`-slr`
+  variánsok, emiatt a helytelen (natív) build került be korábban
+
+#### `[theme]` Kisebb javítások (welcome, GNOME terminál)
+- `raveos-welcome`: támogatás-link `/tiers` végződése levágva
+- GNOME: `org.gnome.Console` induló ablakméret növelve (732×528 → 1000×650)
+
+#### `[calamares]` Vivaldi felvéve a kötelező csomagok közé
+- `desktopselect.conf` `mandatory_packages`: `vivaldi` hozzáadva (hivatalos Arch
+  `extra` csomag) — eddig egyik asztali környezetnél sem volt alapértelmezett
+  böngésző, emiatt pl. a `raveos-welcome` támogatás-linkje sem tudott megnyílni
+
+#### `[iso]` `raveos-core-repo` redundáns mirror + `Include=`-alapú mirrorlist
+- `[raveos-core-repo]` `pacman.conf`-ban az eddigi közvetlen `Server=` sor helyett
+  `Include = /etc/pacman.d/raveos-core-mirrorlist` — a mirrorlist tartalmát mostantól
+  a `raveos-mirrorlist` csomag szolgáltatja (meglévő telepítéseken automatikusan
+  átállítja a configot egy install-hook, ha még a régi formátumban van)
+- Az élő ISO-ba közvetlenül bekerül a `raveos-core-mirrorlist` fájl is, benne az
+  elsődleges (`page.rp1.hu`) és a tartalék GitHub Releases szerver
+  (`github.com/rave-os/RaveOS-core-repo-mirror`) — ha az elsődleges nem elérhető,
+  pacman automatikusan átvált
+
+#### `[iso]` `chaotic-mirrorlist` felesleges `.pacnew` elkerülése
+- A `chaotic-rankmirrors.service` minden boot-kor élő méréssel felülírja a
+  `chaotic-mirrorlist` tartalmát, emiatt egy csomagfrissítéskor pacman `.pacnew`-t
+  hozott létre rá feleslegesen — `NoUpgrade = etc/pacman.d/chaotic-mirrorlist`
+  hozzáadva a `pacman.conf`-hoz, hogy pacman ne is próbálja kezelni ezt a fájlt
+
 ## Build 2026-07-18
 
 #### `[boot]` Plymouth boot splash bevezetve

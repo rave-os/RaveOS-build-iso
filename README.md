@@ -53,6 +53,12 @@ Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizá
   (`github.com/rave-os/RaveOS-core-repo-mirror`) — ha az elsődleges nem elérhető,
   pacman automatikusan átvált
 
+#### `[iso]` `raveos-core-repo` publikálás: git → rsync átállás, adatbázis-hibák javítva
+- A `raveos-core-repo` publikálása git-alapúról rsync-alapúra állítva (a régi
+  6.9GB-os git repo törölve, korlátlan növekedés megszűnt)
+- Két, a repó-adatbázist érintő hiba javítva: `.db.tar.gz`/`.tar.xz` symlink-
+  csonkulás, és a `repo-add --sign` néma sikertelensége hideg gpg-agentnél
+
 #### `[iso]` `chaotic-mirrorlist` felesleges `.pacnew` elkerülése
 - A `chaotic-rankmirrors.service` minden boot-kor élő méréssel felülírja a
   `chaotic-mirrorlist` tartalmát, emiatt egy csomagfrissítéskor pacman `.pacnew`-t

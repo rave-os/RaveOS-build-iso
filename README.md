@@ -10,6 +10,37 @@ Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizá
 
 ## Változásnapló
 
+## Build 2026-08-10
+
+#### `[theme]` GNOME / Plasma / COSMIC / Hyprland theme post_upgrade javítás
+- A `post_upgrade()` hook többé nem írja felül a futó desktop sessiont pacman
+  tranzakció közben. A theme apply service-ek `Before=display-manager.service`
+  sorrendben boot előtt futnak le, nem pacman tranzakció alatt.
+- GNOME `dbus-run-session` FD leválasztva a pacman pipe-ról.
+
+#### `[theme]` Hyprland: Thunar / GTK könyvjelzők
+- A `raveos-hyprland-apply.sh` most dinamikusan beállítja a
+  `.config/gtk-3.0/bookmarks`
+
+#### `[calamares]` Brave Origin alap böngésző
+- Desktop Selector `mandatory_packages`: `vivaldi` → `brave-origin-bin`.
+
+#### `[welcome]` Böngésző szekció eltávolítva, GPU-felismerés javítva
+- Az Alkalmazások & Optimalizáció oldalról a böngésző választó (Brave, Firefox,
+  Brave profil) teljesen kivéve, a cím `OPTIMALIZÁCIÓ`-ra rövidítve.
+- GPU-specifikus optimalizációk: AMD kártya esetén GPU Profile, Overdrive,
+  Power Cap; NVIDIA esetén Nvidia Maximum Performance; Intel/Ismeretlen esetén
+  csak közös opciók.
+- GPU-s opciók alkalmazása után reboot figyelmeztető popup.
+- Első oldal gombsorrend: Kick ↔ Forgejo csere, Forgejo link rövidítve.
+
+#### `[app]` Brave Origin profil az App Installerben
+- Frissített Brave Origin profil az App Installer adatkonfigjában.
+
+#### `[iso]` Brave Origin alapkonfig az ISO skeletonban
+- Brave Origin: profil `/etc/skel/.config/BraveSoftware/Brave-Origin` alatt.
+
+
 ## Build 2026-07-28
 
 #### `[theme]` Hyprland téma: `hyprshell` → `raveswitch` csere + tisztítás

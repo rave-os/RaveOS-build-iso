@@ -235,6 +235,8 @@ jobs:
           echo "External link hozzaadva: https://release.rp1.hu/${ISO_NAME}"
 
           echo "Release kesz: https://git.rp1.hu/RaveOS/RaveOS-Releases/releases/tag/${TAG}"
+          echo "TAG=${TAG}" >> "$GITHUB_ENV"
+          echo "ISO_SHA256=${ISO_SHA256}" >> "$GITHUB_ENV"
 
           # Regi release-ek torlese (3-nal tobbet nem tartunk)
           RELEASES=$(curl -f -s --retry 3 --retry-delay 5 \
@@ -248,6 +250,60 @@ jobs:
               -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}"
             echo "Regi release torolve: $tag"
           done
+
+      - name: Update Shlink short URL
+        if: always()
+        env:
+          SHLINK_URL: ${{ secrets.SHLINK_URL }}
+          SHLINK_API_KEY: ${{ secrets.SHLINK_API_KEY }}
+          ISO_NAME: ${{ env.ISO_NAME }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SHLINK_URL:-}" ] || [ -z "${SHLINK_API_KEY:-}" ]; then
+            echo "Shlink nincs beallitva, kihagyva"
+            exit 0
+          fi
+          ISO_NAME="${ISO_NAME:-unknown}"
+          LONG_URL="https://release.rp1.hu/${ISO_NAME}"
+
+          curl -s -X POST "${SHLINK_URL}/rest/v3/short-urls" \
+            -H "X-Api-Key: ${SHLINK_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"longUrl\":\"${LONG_URL}\",\"customSlug\":\"raveos-download\",\"findIfExists\":true}" || true
+
+          curl -s -X PATCH "${SHLINK_URL}/rest/v3/short-urls/raveos-download" \
+            -H "X-Api-Key: ${SHLINK_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"longUrl\":\"${LONG_URL}\"}" || true
+
+      - name: Discord notification
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          TAG: ${{ env.TAG }}
+          ISO_NAME: ${{ env.ISO_NAME }}
+          ISO_SHA256: ${{ env.ISO_SHA256 }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DISCORD_WEBHOOK:-}" ]; then
+            echo "DISCORD_WEBHOOK nincs beallitva, ertesites kihagyva"
+            exit 0
+          fi
+          TAG="${TAG:-unknown}"
+          ISO_NAME="${ISO_NAME:-unknown}"
+          ISO_SHA256="${ISO_SHA256:-n/a}"
+
+          curl -s \
+            -F "payload_json=$(cat <<JSON
+{
+  "content": "@everyone\n> **RaveOS · Új ISO elérhető!**\n> \n> Verzió: **${TAG}**\n> Fájl: \`${ISO_NAME}\`\n> Letöltés: https://links.rp1.hu/raveos-download\n> SHA256: \`${ISO_SHA256}\`",
+  "allowed_mentions": {"parse": ["everyone"]}
+}
+JSON
+)" \
+            -F "file=@assets/discord-notify.png" \
+            -X POST "${DISCORD_WEBHOOK}" \
+            || true
 
       - name: Cleanup (SAFE)
         if: always()

@@ -293,14 +293,27 @@ jobs:
           ISO_NAME="${ISO_NAME:-unknown}"
           ISO_SHA256="${ISO_SHA256:-n/a}"
 
-          curl -s \
-            -F "payload_json=$(cat <<JSON
-{
-  "content": "@everyone\n> **RaveOS · Új ISO elérhető!**\n> \n> Verzió: **${TAG}**\n> Fájl: \`${ISO_NAME}\`\n> Letöltés: https://links.rp1.hu/raveos-download\n> SHA256: \`${ISO_SHA256}\`",
-  "allowed_mentions": {"parse": ["everyone"]}
+          JSON_PAYLOAD=$(TAG="${TAG}" ISO_NAME="${ISO_NAME}" ISO_SHA256="${ISO_SHA256}" python3 -c "
+import json, os
+tag = os.environ.get('TAG', 'unknown')
+name = os.environ.get('ISO_NAME', 'unknown')
+sha = os.environ.get('ISO_SHA256', 'n/a')
+msg = {
+    'content': '\n'.join([
+        '@everyone',
+        '> **RaveOS · Új ISO elérhető!**',
+        '> ',
+        f'> Verzió: **{tag}**',
+        f'> Fájl: \`{name}\`',
+        '> Letöltés: https://links.rp1.hu/raveos-download',
+        f'> SHA256: \`{sha}\`',
+    ]),
+    'allowed_mentions': {'parse': ['everyone']},
 }
-JSON
-)" \
+print(json.dumps(msg, ensure_ascii=False))
+")
+          curl -s \
+            -F "payload_json=${JSON_PAYLOAD}" \
             -F "file=@assets/discord-notify.png" \
             -X POST "${DISCORD_WEBHOOK}" \
             || true

@@ -10,6 +10,25 @@ Arch Linux alapú egyedi disztribúció tőbb asztali környezettel, automatizá
 
 ## Változásnapló
 
+## Build 2026-08-13
+
+#### `[theme]` COSMIC billentyűzet-kiosztás javítás
+- A `raveos-cosmic-apply.sh` boot-kor, bejelentkezés előtt beírja a Calamares által
+  választott kiosztást a `~/.config/cosmic/com.system76.CosmicComp/v1/xkb_config`-ba
+  (skel + meglévő userek) — korábban rossz fájlba írt, ezért a COSMIC angol
+  billentyűzettel indult.
+- `raveos-cosmic-first-login.sh`: a helyes `xkb_config` fájlba és RON formátumba ír.
+
+#### `[theme]` Hyprland billentyűzet-kiosztás javítás
+- `set_hypr_keyboard()` a layout mellett már a `kb_variant`-ot is beállítja,
+  az X11 konfigból (`/etc/X11/xorg.conf.d/00-keyboard.conf`) olvasva.
+
+#### `[theme]` Hyprland: XDG mappák + Thunar könyvjelzők nyelvfüggően
+- A home mappák és a Thunar könyvjelzők a telepítő nyelvének megfelelően jönnek létre
+  (magyar / angol / német). A `setup_xdg_dirs()` determinisztikusan hozza létre a
+  mappákat és a `user-dirs.dirs`-t, mert az `xdg-user-dirs-update` a chroot/telepítés
+  közben angol locale-al futott (LC_ALL felülírta a LANG-ot).
+
 ## Build 2026-08-10
 
 #### `[theme]` GNOME / Plasma / COSMIC / Hyprland theme post_upgrade javítás

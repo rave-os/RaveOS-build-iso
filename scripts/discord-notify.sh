@@ -11,24 +11,18 @@ if [ -z "${WEBHOOK}" ]; then
   exit 0
 fi
 
-JSON=$(TAG="${TAG}" ISO_NAME="${ISO_NAME}" ISO_SHA256="${ISO_SHA256}" python3 -c "
-import json, os
-tag = os.environ.get('TAG', 'unknown')
-name = os.environ.get('ISO_NAME', 'unknown')
-sha = os.environ.get('ISO_SHA256', 'n/a')
-msg = {
-    'content': '\n'.join([
-        '@everyone',
-        '> **RaveOS · Új ISO elérhető!**',
-        '> ',
-        f'> Verzió: **{tag}**',
-        f'> Fájl: `{name}`',
-        '> Letöltés: https://links.rp1.hu/raveos-download',
-        f'> SHA256: `{sha}`',
-    ]),
-    'allowed_mentions': {'parse': ['everyone']},
-}
-print(json.dumps(msg, ensure_ascii=False))
+CONTENT="@everyone
+> **RaveOS · Uj ISO elerheto!**
+> 
+> Verzio: **${TAG}**
+> Fajl: \`${ISO_NAME}\`
+> Letoltes: https://links.rp1.hu/raveos-download
+> SHA256: \`${ISO_SHA256}\`"
+
+JSON=$(python3 -c "
+import json
+content = '''${CONTENT}'''
+print(json.dumps({'content': content, 'allowed_mentions': {'parse': ['everyone']}}, ensure_ascii=False))
 ")
 
 curl -s \
